@@ -1236,7 +1236,11 @@ max-width: 250px;
                 <div class="burger-menu-item-icon">🌙</div>
                 <div class="burger-menu-item-text">Mode sombre</div>
             </div>
-            
+            <div class="burger-menu-item" onclick="openPrelevementsManual()">
+    <div class="burger-menu-item-icon">💉</div>
+    <div class="burger-menu-item-text">Manuel de prélèvements</div>
+</div>
+
             <div class="burger-menu-section">PARAMÈTRES</div>
             
             <div class="burger-menu-item" onclick="openSettings()">
@@ -1801,5 +1805,39 @@ max-width: 250px;
             transform: scale(1.2);
         }
     </style>
+    <!-- Modal Manuel de Prélèvements -->
+<div class="modal" id="prelevementsModal">
+    <div class="modal-content" style="max-width: 900px;">
+        <h2>💉 Manuel de Prélèvements</h2>
+        
+        <div class="modal-body">
+            <div style="margin-bottom: 15px;">
+                <input type="text" id="prelevementSearch" placeholder="🔍 Rechercher une analyse..." 
+                       style="width: 100%; padding: 12px; border: 2px solid #dee2e6; border-radius: 8px; font-size: 1em;"
+                       onkeyup="filterPrelevements()">
+            </div>
+            
+            <div style="overflow-x: auto;">
+                <table id="prelevementsTable" style="width: 100%; border-collapse: collapse; background: white;">
+                    <thead>
+                        <tr style="background: var(--primary-color); color: white;">
+                            <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6;">Analyse</th>
+                            <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6;">Nature</th>
+                            <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6;">Tube</th>
+                        </tr>
+                    </thead>
+                    <tbody id="prelevementsTableBody">
+                        <!-- Rempli dynamiquement -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div class="modal-buttons">
+            <button class="btn btn-secondary" onclick="closePrelevementsModal()">Fermer</button>
+        </div>
+    </div>
+</div>
+
 </body>
 </html>
