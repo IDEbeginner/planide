@@ -228,44 +228,38 @@ function generateTimeSlots() {
     const [startHour, startMin] = appConfig.startTime.split(':').map(Number);
     const [endHour, endMin] = appConfig.endTime.split(':').map(Number);
     
-    let currentHour = startHour;
-    let currentMin = startMin;
+    // Partir de l'heure pleine suivante si on a des minutes
+    let currentHour = startMin > 0 ? startHour + 1 : startHour;
     
     // Gérer les gardes de nuit (qui passent minuit)
-    const isNightShift = startHour > endHour;
-    const maxIterations = 24; // Sécurité anti-boucle infinie
+    const isNightShift = startHour >= endHour;
+    const maxIterations = 24;
     let iterations = 0;
     
     while (iterations < maxIterations) {
-        timeSlots.push(`${String(currentHour).padStart(2, '0')}h${String(currentMin).padStart(2, '0')}`);
+        const hour = currentHour % 24; // Normaliser pour passage minuit
+        timeSlots.push(`${String(hour).padStart(2, '0')}h00`);
         
-        // Incrémenter l'heure
         currentHour += appConfig.interval;
         
-        // Gérer le passage à minuit
-        if (currentHour >= 24) {
-            currentHour = currentHour - 24;
-        }
-        
         // Condition d'arrêt
+        const normalizedHour = currentHour % 24;
+        
         if (isNightShift) {
-            // Garde de nuit : on s'arrête quand on atteint l'heure de fin
-            if (currentHour > endHour || (currentHour === endHour && currentMin > endMin)) {
-                break;
-            }
-            // Si on repasse dans l'après-midi, on arrête
-            if (currentHour > startHour && currentHour < 12) {
+            // Pour garde de nuit : on s'arrête après l'heure de fin
+            if (normalizedHour > endHour && normalizedHour <= startHour) {
                 break;
             }
         } else {
-            // Garde de jour : arrêt classique
-            if (currentHour > endHour || (currentHour === endHour && currentMin > endMin)) {
+            // Pour garde de jour
+            if (currentHour > endHour) {
                 break;
             }
         }
         
         iterations++;
     }
+}
 }
 
 function populateTimeSelects() {
