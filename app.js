@@ -716,7 +716,33 @@ function renderGlobalOverview() {
             
             timeCares.forEach(care => {
                 const card = document.createElement('div');
-                card.className = 'overview-care-card' + (care.complete​​​​​​​​​​​​​​​​
+                card.className = 'overview-care-card' + (care.completed ? ' completed' : '');
+                
+                // Extraire l'emoji de la description
+                const emojiMatch = care.description.match(/[\p{Emoji}\u{1F300}-\u{1F9FF}]/u);
+                const emoji = emojiMatch ? emojiMatch[0] : '📋';
+                
+                card.innerHTML = `
+                    <div class="overview-care-emoji">${emoji}</div>
+                    <div class="overview-room-number">${care.room}</div>
+                `;
+                card.onclick = () => {
+                    goToRoom(rooms.indexOf(care.room));
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                };
+                grid.appendChild(card);
+            });
+            
+            section.appendChild(header);
+            section.appendChild(grid);
+            overview.appendChild(section);
+        }
+    });
+    
+    if (overview.innerHTML === '') {
+        overview.innerHTML = '<div style="text-align: center; color: #6c757d; padding: 40px;">Aucun soin programmé</div>';
+    }
+}
 
 }
 
