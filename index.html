@@ -1707,6 +1707,58 @@ max-width: 250px;
                     <input type="text" id="quickCareDescription" readonly
                         style="background: #f8f9fa; font-weight: 600; font-size: 1.1em;">
                 </div>
+                <!-- Sélection ATB -->
+<div class="form-group" id="atbSelectionGroup" style="display: none;">
+    <label>Antibiotique</label>
+    <select id="atbSelect" onchange="updateATBSelection()">
+        <option value="">-- Choisir un antibiotique --</option>
+    </select>
+</div>
+
+<div class="form-group" id="atbDosageGroup" style="display: none;">
+    <label>Dosage</label>
+    <select id="atbDosage" onchange="updateATBDosage()">
+        <option value="">-- Choisir un dosage --</option>
+    </select>
+</div>
+
+<!-- Sélection Perfusion -->
+<div class="form-group" id="perfusionSelectionGroup" style="display: none;">
+    <label>Type de perfusion</label>
+    <select id="perfusionSelect" onchange="updatePerfusionSelection()">
+        <option value="">-- Choisir une perfusion --</option>
+    </select>
+</div>
+
+<div class="form-group" id="perfusionVolumeGroup" style="display: none;">
+    <label>Volume</label>
+    <select id="perfusionVolume" onchange="updatePerfusionVolume()">
+        <option value="">-- Choisir un volume --</option>
+    </select>
+</div>
+
+<!-- Sélection Médicament -->
+<div class="form-group" id="medicationSelectionGroup" style="display: none;">
+    <label>Catégorie de médicament</label>
+    <select id="medicationCategory" onchange="updateMedicationCategory()">
+        <option value="">-- Choisir une catégorie --</option>
+    </select>
+</div>
+
+<div class="form-group" id="medicationSelectGroup" style="display: none;">
+    <label>Médicament</label>
+    <select id="medicationSelect" onchange="updateMedicationSelection()">
+        <option value="">-- Choisir un médicament --</option>
+    </select>
+</div>
+
+<div class="form-group" id="medicationDosageGroup" style="display: none;">
+    <label>Dosage</label>
+    <select id="medicationDosage" onchange="updateMedicationDosage()">
+        <option value="">-- Choisir un dosage --</option>
+    </select>
+</div>
+
             </div>
             <div class="modal-buttons">
                 <button class="btn btn-secondary" onclick="closeQuickModal()">Annuler</button>
