@@ -1,8 +1,8 @@
 {
-  "name": "PlanIDE - Planification des Soins",
+  "name": "PlanIDE v3.2",
   "short_name": "PlanIDE",
   "description": "Application de planification des soins infirmiers pour les gardes de nuit",
-  "start_url": "/Plannifdesoins/",
+  "start_url": "/planide/",
   "display": "standalone",
   "background_color": "#06b6d4",
   "theme_color": "#0e7490",
