@@ -1661,6 +1661,98 @@ document.addEventListener('keydown', (e) => {
     if (e.key === 'ArrowLeft') previousRoom();
     else if (e.key === 'ArrowRight') nextRoom();
 });
+// ===== MANUEL DE PRÉLÈVEMENTS =====
+const prelevementsData = [
+    { analyse: "Acétone", nature: "Sang total", tube: "Tube EDTA (bouchon mauve)" },
+    { analyse: "Acide lactique (Lactates)", nature: "Sang total artériel", tube: "Seringue héparinée à gaz" },
+    { analyse: "Acide urique", nature: "Sérum", tube: "Tube sec jaune" },
+    { analyse: "ALAT (TGP)", nature: "Sérum", tube: "Tube sec jaune" },
+    { analyse: "Albumine", nature: "Sérum", tube: "Tube sec jaune" },
+    { analyse: "Alcool (Éthanol)", nature: "Sang total", tube: "Tube fluoré (gris)" },
+    { analyse: "Aldostérone", nature: "Plasma", tube: "Tube EDTA (mauve)" },
+    { analyse: "Alpha-fœtoprotéine (AFP)", nature: "Sérum", tube: "Tube sec jaune" },
+    { analyse: "Amylase", nature: "Sérum", tube: "Tube sec jaune" },
+    { analyse: "ASAT (TGO)", nature: "Sérum", tube: "Tube sec jaune" },
+    { analyse: "Bilirubine totale", nature: "Sérum", tube: "Tube sec jaune (à l'abri de la lumière)" },
+    { analyse: "BNP / NT-proBNP", nature: "Plasma", tube: "Tube EDTA (mauve)" },
+    { analyse: "Calcémie (Calcium)", nature: "Sérum", tube: "Tube sec jaune" },
+    { analyse: "CK (CPK)", nature: "Sérum", tube: "Tube sec jaune" },
+    { analyse: "CK-MB", nature: "Sérum", tube: "Tube sec jaune" },
+    { analyse: "Cholestérol total", nature: "Sérum", tube: "Tube sec jaune" },
+    { analyse: "Cortisol", nature: "Sérum", tube: "Tube sec jaune" },
+    { analyse: "Créatinine", nature: "Sérum", tube: "Tube sec jaune" },
+    { analyse: "CRP (Protéine C-réactive)", nature: "Sérum", tube: "Tube sec jaune" },
+    { analyse: "D-dimères", nature: "Plasma", tube: "Tube citrate (bleu)" },
+    { analyse: "Ferritine", nature: "Sérum", tube: "Tube sec jaune" },
+    { analyse: "Fibrinogène", nature: "Plasma", tube: "Tube citrate (bleu)" },
+    { analyse: "Folates (Vitamine B9)", nature: "Sérum", tube: "Tube sec jaune" },
+    { analyse: "Gamma-GT", nature: "Sérum", tube: "Tube sec jaune" },
+    { analyse: "Gaz du sang artériel", nature: "Sang artériel", tube: "Seringue héparinée" },
+    { analyse: "Glucose (Glycémie)", nature: "Plasma", tube: "Tube fluoré (gris)" },
+    { analyse: "HbA1c (Hémoglobine glyquée)", nature: "Sang total", tube: "Tube EDTA (mauve)" },
+    { analyse: "Hémogramme (NFS)", nature: "Sang total", tube: "Tube EDTA (mauve)" },
+    { analyse: "Hémocultures", nature: "Sang total", tube: "Flacons hémocultures (aérobie + anaérobie)" },
+    { analyse: "Hémostase (TP, TCA)", nature: "Plasma", tube: "Tube citrate (bleu)" },
+    { analyse: "HCG (Bêta-HCG)", nature: "Sérum", tube: "Tube sec jaune" },
+    { analyse: "INR", nature: "Plasma", tube: "Tube citrate (bleu)" },
+    { analyse: "Ionogramme (Na, K, Cl)", nature: "Sérum ou plasma", tube: "Tube sec jaune ou hépariné vert" },
+    { analyse: "Lipase", nature: "Sérum", tube: "Tube sec jaune" },
+    { analyse: "Magnésium", nature: "Sérum", tube: "Tube sec jaune" },
+    { analyse: "PAL (Phosphatases alcalines)", nature: "Sérum", tube: "Tube sec jaune" },
+    { analyse: "Plaquettes", nature: "Sang total", tube: "Tube EDTA (mauve)" },
+    { analyse: "Potassium (K+)", nature: "Sérum", tube: "Tube sec jaune" },
+    { analyse: "Protéines totales", nature: "Sérum", tube: "Tube sec jaune" },
+    { analyse: "PSA", nature: "Sérum", tube: "Tube sec jaune" },
+    { analyse: "Sodium (Na+)", nature: "Sérum", tube: "Tube sec jaune" },
+    { analyse: "T3, T4, TSH", nature: "Sérum", tube: "Tube sec jaune" },
+    { analyse: "TCA (Temps de céphaline activé)", nature: "Plasma", tube: "Tube citrate (bleu)" },
+    { analyse: "TP (Taux de prothrombine)", nature: "Plasma", tube: "Tube citrate (bleu)" },
+    { analyse: "Transaminases (ALAT, ASAT)", nature: "Sérum", tube: "Tube sec jaune" },
+    { analyse: "Triglycérides", nature: "Sérum", tube: "Tube sec jaune" },
+    { analyse: "Troponine", nature: "Sérum ou plasma", tube: "Tube sec jaune ou hépariné vert" },
+    { analyse: "Urée", nature: "Sérum", tube: "Tube sec jaune" },
+    { analyse: "Vitamine B12", nature: "Sérum", tube: "Tube sec jaune" },
+    { analyse: "Vitamine D", nature: "Sérum", tube: "Tube sec jaune" }
+];
+
+function openPrelevementsManual() {
+    closeBurgerMenu();
+    renderPrelevementsTable();
+    document.getElementById('prelevementsModal').classList.add('active');
+}
+
+function closePrelevementsModal() {
+    document.getElementById('prelevementsModal').classList.remove('active');
+}
+
+function renderPrelevementsTable(filterText = '') {
+    const tbody = document.getElementById('prelevementsTableBody');
+    tbody.innerHTML = '';
+    
+    const filtered = filterText 
+        ? prelevementsData.filter(p => p.analyse.toLowerCase().includes(filterText.toLowerCase()))
+        : prelevementsData;
+    
+    filtered.forEach((item, index) => {
+        const row = document.createElement('tr');
+        row.style.background = index % 2 === 0 ? '#f8f9fa' : 'white';
+        row.innerHTML = `
+            <td style="padding: 12px; border: 1px solid #dee2e6; font-weight: 600;">${item.analyse}</td>
+            <td style="padding: 12px; border: 1px solid #dee2e6;">${item.nature}</td>
+            <td style="padding: 12px; border: 1px solid #dee2e6;">${item.tube}</td>
+        `;
+        tbody.appendChild(row);
+    });
+    
+    if (filtered.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="3" style="padding: 40px; text-align: center; color: #6c757d;">Aucune analyse trouvée</td></tr>';
+    }
+}
+
+function filterPrelevements() {
+    const searchText = document.getElementById('prelevementSearch').value;
+    renderPrelevementsTable(searchText);
+}
 
 // ===== LANCEMENT =====
 init();
