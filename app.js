@@ -650,28 +650,21 @@ function renderGlobalOverview() {
         if (timeCares.length > 0) {
             const section = document.createElement('div');
             section.className = 'overview-time-section';
-            section.innerHTML = `
-                <div class="overview-time-header">
-                    <span>${time.replace('h', ':')}</span>
-                    <span class="overview-time-badge">${timeCares.length} soin(s)</span>
-                </div>
-                <div class="overview-cares-grid">
-                    ${timeCares.map(care => `
-                        <div class="overview-care-card ${care.completed ? 'completed' : ''}" 
-                             onclick="goToRoom(${rooms.indexOf(care.room)}); window.scrollTo(0,0);">
-                            <div class="overview-room-number">Chambre ${care.room}</div>
-                            <div class="overview-care-description">${care.description}</div>
-                        </div>
-                    `).join('')}
-                </div>
+            
+            const header = document.createElement('div');
+            header.className = 'overview-time-header';
+            header.innerHTML = `
+                <span>${time.replace('h', ':')}</span>
+                <span class="overview-time-badge">${timeCares.length} soin(s)</span>
             `;
-            overview.appendChild(section);
-        }
-    });
-    
-    if (overview.innerHTML === '') {
-        overview.innerHTML = '<div style="text-align: center; color: #6c757d; padding: 40px;">Aucun soin programmé</div>';
-    }
+            
+            const grid = document.createElement('div');
+            grid.className = 'overview-cares-grid';
+            
+            timeCares.forEach(care => {
+                const card = document.createElement('div');
+                card.className = 'overview-care-card' + (care.complete​​​​​​​​​​​​​​​​
+
 }
 
 function saveCareData() {
