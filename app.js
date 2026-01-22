@@ -744,8 +744,6 @@ function renderGlobalOverview() {
     }
 }
 
-}
-
 function saveCareData() {
     localStorage.setItem(`planide_data_${currentSector}`, JSON.stringify(careData));
 }
