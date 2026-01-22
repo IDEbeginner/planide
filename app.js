@@ -231,10 +231,40 @@ function generateTimeSlots() {
     let currentHour = startHour;
     let currentMin = startMin;
     
-    while (currentHour < endHour || (currentHour === endHour && currentMin <= endMin)) {
+    // Gérer les gardes de nuit (qui passent minuit)
+    const isNightShift = startHour > endHour;
+    const maxIterations = 24; // Sécurité anti-boucle infinie
+    let iterations = 0;
+    
+    while (iterations < maxIterations) {
         timeSlots.push(`${String(currentHour).padStart(2, '0')}h${String(currentMin).padStart(2, '0')}`);
+        
+        // Incrémenter l'heure
         currentHour += appConfig.interval;
-        if (currentHour >= 24) break;
+        
+        // Gérer le passage à minuit
+        if (currentHour >= 24) {
+            currentHour = currentHour - 24;
+        }
+        
+        // Condition d'arrêt
+        if (isNightShift) {
+            // Garde de nuit : on s'arrête quand on atteint l'heure de fin
+            if (currentHour > endHour || (currentHour === endHour && currentMin > endMin)) {
+                break;
+            }
+            // Si on repasse dans l'après-midi, on arrête
+            if (currentHour > startHour && currentHour < 12) {
+                break;
+            }
+        } else {
+            // Garde de jour : arrêt classique
+            if (currentHour > endHour || (currentHour === endHour && currentMin > endMin)) {
+                break;
+            }
+        }
+        
+        iterations++;
     }
 }
 
