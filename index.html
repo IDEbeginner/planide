@@ -1,0 +1,1706 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PlanIDE - Planification des Soins Infirmiers</title>
+    
+    <!-- PWA Manifest -->
+    <meta name="theme-color" content="#0e7490">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="PlanIDE">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    
+    <style>
+        :root {
+            --primary-color: #14b8a6;
+            --primary-dark: #0d9488;
+            --secondary-color: #06b6d4;
+            --secondary-dark: #0891b2;
+            --header-gradient-start: #0e7490;
+            --header-gradient-end: #155e75;
+            --success-color: #10b981;
+            --danger-color: #ef4444;
+            --warning-color: #f59e0b;
+            --text-dark: #134e4a;
+            --text-medium: #0f766e;
+            --bg-light: #f8f9fa;
+            --border-color: #dee2e6;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--secondary-color) 0%, var(--secondary-dark) 100%);
+            padding: 20px;
+            min-height: 100vh;
+            transition: background 0.3s;
+        }
+
+        body.dark-mode {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        body.dark-mode .container {
+            background: #1e293b;
+            color: #e2e8f0;
+        }
+
+        /* ===== HEADER ===== */
+        .header {
+            background: linear-gradient(135deg, var(--header-gradient-start) 0%, var(--header-gradient-end) 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .burger-icon {
+            position: absolute;
+            top: 30px;
+            left: 30px;
+            font-size: 1.8em;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.2);
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .burger-icon:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+
+        .settings-icon {
+            position: absolute;
+            top: 30px;
+            right: 30px;
+            font-size: 1.8em;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.2);
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .settings-icon:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: rotate(45deg);
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+
+        .header-logo {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 3px solid white;
+        }
+
+        .header h1 {
+            font-size: 2em;
+            margin: 0;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+
+        .user-badge {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px 20px;
+            border-radius: 20px;
+            margin-top: 15px;
+            display: inline-block;
+            font-size: 0.9em;
+        }
+
+        /* ===== MENU BURGER ===== */
+        .burger-menu {
+            position: fixed;
+            top: 0;
+            left: -350px;
+            width: 350px;
+            height: 100%;
+            background: white;
+            box-shadow: 2px 0 20px rgba(0, 0, 0, 0.3);
+            z-index: 2000;
+            transition: left 0.3s;
+            overflow-y: auto;
+        }
+
+        body.dark-mode .burger-menu {
+            background: #1e293b;
+        }
+
+        .burger-menu.active {
+            left: 0;
+        }
+
+        .burger-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1999;
+            display: none;
+        }
+
+        .burger-overlay.active {
+            display: block;
+        }
+
+        .burger-header {
+            background: linear-gradient(135deg, var(--header-gradient-start) 0%, var(--header-gradient-end) 100%);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+
+        .burger-profile-pic {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5em;
+            margin: 0 auto 15px;
+            border: 3px solid white;
+        }
+
+        .burger-profile-name {
+            font-size: 1.3em;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .burger-profile-role {
+            opacity: 0.9;
+            font-size: 0.9em;
+        }
+
+        .burger-menu-items {
+            padding: 20px 0;
+        }
+
+        .burger-menu-item {
+            padding: 15px 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            border-left: 4px solid transparent;
+        }
+
+        .burger-menu-item:hover {
+            background: var(--bg-light);
+            border-left-color: var(--primary-color);
+        }
+
+        body.dark-mode .burger-menu-item:hover {
+            background: #334155;
+        }
+
+        .burger-menu-item-icon {
+            font-size: 1.5em;
+            width: 30px;
+            text-align: center;
+        }
+
+        .burger-menu-item-text {
+            flex: 1;
+            font-weight: 500;
+            color: var(--text-dark);
+        }
+
+        body.dark-mode .burger-menu-item-text {
+            color: #e2e8f0;
+        }
+
+        .burger-menu-section {
+            padding: 10px 25px;
+            font-size: 0.8em;
+            text-transform: uppercase;
+            font-weight: 600;
+            color: #6c757d;
+            letter-spacing: 0.5px;
+        }
+
+        /* ===== NAVIGATION ===== */
+        .navigation {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            padding: 30px;
+            background: var(--bg-light);
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        body.dark-mode .navigation {
+            background: #334155;
+            border-bottom-color: #475569;
+        }
+
+        .nav-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-size: 1.2em;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .nav-btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .room-display {
+            background: white;
+            padding: 20px 40px;
+            border-radius: 15px;
+            border: 3px solid var(--primary-color);
+            font-size: 3em;
+            font-weight: bold;
+            color: var(--primary-color);
+            min-width: 200px;
+            text-align: center;
+        }
+
+        body.dark-mode .room-display {
+            background: #1e293b;
+        }
+
+        /* ===== RESTE DU STYLE (identique à avant) ===== */
+        .action-buttons {
+            padding: 20px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+            background: var(--bg-light);
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        body.dark-mode .action-buttons {
+            background: #334155;
+            border-bottom-color: #475569;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+            transform: translateY(-2px);
+        }
+
+        .btn-danger {
+            background: var(--danger-color);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+            transform: translateY(-2px);
+        }
+
+        .btn-warning {
+            background: var(--warning-color);
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background: #d97706;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        body.dark-mode .content {
+            background: #1e293b;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, var(--secondary-color) 0%, var(--secondary-dark) 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            opacity: 0.9;
+            font-size: 0.9em;
+        }
+
+        .timeline {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .time-slot {
+            background: var(--bg-light);
+            border-radius: 10px;
+            padding: 20px;
+            border-left: 5px solid var(--primary-color);
+        }
+
+        body.dark-mode .time-slot {
+            background: #334155;
+        }
+
+        .time-header {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: var(--text-medium);
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        body.dark-mode .time-header {
+            color: #94a3b8;
+        }
+
+        .time-badge {
+            background: var(--primary-color);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.8em;
+        }
+
+        .care-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .care-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid #e9ecef;
+        }
+
+        body.dark-mode .care-item {
+            background: #1e293b;
+            border-color: #475569;
+        }
+
+        .care-item:hover {
+            border-color: var(--primary-color);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+            transform: translateX(5px);
+        }
+
+        .care-item.completed {
+            background: #d1fae5;
+            border-color: var(--success-color);
+        }
+
+        body.dark-mode .care-item.completed {
+            background: #064e3b;
+            border-color: var(--success-color);
+        }
+
+        .care-item.completed .care-text {
+            text-decoration: line-through;
+            opacity: 0.7;
+        }
+
+        .care-text {
+            flex: 1;
+            font-weight: 500;
+        }
+
+        .delete-btn {
+            background: var(--danger-color);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .delete-btn:hover {
+            background: #dc2626;
+        }
+
+        /* ===== MODALS ===== */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 35px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+        }
+
+        body.dark-mode .modal-content {
+            background: #1e293b;
+            color: #e2e8f0;
+        }
+
+        .modal-content h2 {
+            margin-bottom: 25px;
+            color: var(--text-medium);
+            font-size: 1.8em;
+        }
+
+        body.dark-mode .modal-content h2 {
+            color: #94a3b8;
+        }
+
+        .modal-body {
+            flex: 1;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 2px solid #e9ecef;
+            position: sticky;
+            bottom: 0;
+            background: white;
+        }
+
+        body.dark-mode .modal-buttons {
+            border-top-color: #475569;
+            background: #1e293b;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        body.dark-mode .form-group label {
+            color: #cbd5e1;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+            background: white;
+            color: #000;
+        }
+
+        body.dark-mode .form-group input,
+        body.dark-mode .form-group select,
+        body.dark-mode .form-group textarea {
+            background: #334155;
+            border-color: #475569;
+            color: #e2e8f0;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .room-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+            gap: 10px;
+            padding: 20px;
+            max-width: 100%;
+            overflow-x: auto;
+        }
+
+        .room-cell {
+            background: var(--bg-light);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid var(--border-color);
+            font-weight: 600;
+        }
+
+        body.dark-mode .room-cell {
+            background: #334155;
+            border-color: #475569;
+            color: #e2e8f0;
+        }
+
+        .room-cell:hover {
+            background: #e9ecef;
+            border-color: var(--primary-color);
+        }
+
+        body.dark-mode .room-cell:hover {
+            background: #475569;
+        }
+
+        .room-cell.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .quick-actions {
+            padding: 20px;
+            background: var(--bg-light);
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        body.dark-mode .quick-actions {
+            background: #334155;
+            border-bottom-color: #475569;
+        }
+
+        .quick-actions h3 {
+            color: var(--text-medium);
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        body.dark-mode .quick-actions h3 {
+            color: #94a3b8;
+        }
+
+        .quick-actions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
+        }
+
+        .quick-btn {
+            background: white;
+            border: 2px solid var(--border-color);
+            padding: 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        body.dark-mode .quick-btn {
+            background: #1e293b;
+            border-color: #475569;
+        }
+
+        .quick-btn:hover {
+            border-color: var(--primary-color);
+            background: #f0f4ff;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        body.dark-mode .quick-btn:hover {
+            background: #334155;
+        }
+
+        .quick-btn-emoji {
+            font-size: 2em;
+        }
+
+        .quick-btn-label {
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        body.dark-mode .quick-btn-label {
+            color: #cbd5e1;
+        }
+
+        .quick-btn:hover .quick-btn-label {
+            color: var(--primary-color);
+        }
+
+        .multi-room-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 10px;
+            max-height: 250px;
+            overflow-y: auto;
+            padding: 10px;
+            background: var(--bg-light);
+            border-radius: 8px;
+        }
+
+        body.dark-mode .multi-room-grid {
+            background: #334155;
+        }
+
+        .multi-room-item {
+            background: white;
+            padding: 12px;
+            border-radius: 8px;
+            border: 2px solid var(--border-color);
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        body.dark-mode .multi-room-item {
+            background: #1e293b;
+            border-color: #475569;
+        }
+
+        .multi-room-item:hover {
+            border-color: var(--primary-color);
+            background: #f0f4ff;
+        }
+
+        body.dark-mode .multi-room-item:hover {
+            background: #334155;
+        }
+
+        .multi-room-item.checked {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .multi-room-item input[type="checkbox"] {
+            width: auto;
+        }
+
+        .multi-room-item label {
+            cursor: pointer;
+            margin: 0;
+            font-weight: 600;
+        }
+
+        .select-all-btn {
+            background: #8b5cf6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-bottom: 15px;
+            transition: all 0.3s;
+        }
+
+        .select-all-btn:hover {
+            background: #7c3aed;
+            transform: translateY(-2px);
+        }
+
+        .global-overview {
+            margin-top: 40px;
+            padding: 30px;
+            background: var(--bg-light);
+            border-radius: 15px;
+        }
+
+        body.dark-mode .global-overview {
+            background: #334155;
+        }
+
+        .global-overview h2 {
+            color: var(--text-medium);
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+
+        body.dark-mode .global-overview h2 {
+            color: #94a3b8;
+        }
+
+        .overview-time-section {
+            margin-bottom: 30px;
+        }
+
+        .overview-time-header {
+            background: var(--primary-color);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .overview-time-badge {
+            background: rgba(255, 255, 255, 0.3);
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 0.9em;
+        }
+
+        .overview-cares-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 12px;
+        }
+
+        .overview-care-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border: 2px solid var(--border-color);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        body.dark-mode .overview-care-card {
+            background: #1e293b;
+            border-color: #475569;
+        }
+
+        .overview-care-card:hover {
+            border-color: var(--primary-color);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .overview-care-card.completed {
+            background: #d1fae5;
+            border-color: var(--success-color);
+        }
+
+        body.dark-mode .overview-care-card.completed {
+            background: #064e3b;
+        }
+
+        .overview-room-number {
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 8px;
+        }
+
+        .overview-care-description {
+            color: var(--text-dark);
+        }
+
+        body.dark-mode .overview-care-description {
+            color: #cbd5e1;
+        }
+
+        /* ===== THEME SELECTOR ===== */
+        .theme-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .theme-card {
+            padding: 20px;
+            border-radius: 10px;
+            border: 3px solid transparent;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .theme-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .theme-card.active {
+            border-color: white;
+            box-shadow: 0 0 20px rgba(255,255,255,0.5);
+        }
+
+        .theme-card.active::after {
+            content: '✓';
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: white;
+            color: #000;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .theme-name {
+            color: white;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+
+        /* ===== TEMPLATES ===== */
+        .template-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .template-card {
+            background: white;
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        body.dark-mode .template-card {
+            background: #334155;
+            border-color: #475569;
+        }
+
+        .template-card:hover {
+            border-color: var(--primary-color);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transform: translateY(-3px);
+        }
+
+        .template-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .template-name {
+            font-weight: 600;
+            font-size: 1.2em;
+            color: var(--text-dark);
+        }
+
+        body.dark-mode .template-name {
+            color: #e2e8f0;
+        }
+
+        .template-icon {
+            font-size: 1.5em;
+        }
+
+        .template-info {
+            color: #6c757d;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+        }
+
+        .template-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .template-btn {
+            flex: 1;
+            padding: 8px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .template-btn-load {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .template-btn-load:hover {
+            background: var(--primary-dark);
+        }
+
+        .template-btn-delete {
+            background: var(--danger-color);
+            color: white;
+        }
+
+        .template-btn-delete:hover {
+            background: #dc2626;
+        }
+
+        /* Config section */
+        .config-section {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 2px solid #e9ecef;
+        }
+
+        body.dark-mode .config-section {
+            background: #334155;
+            border-color: #475569;
+        }
+
+        .config-section h3 {
+            color: var(--text-medium);
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        body.dark-mode .config-section h3 {
+            color: #94a3b8;
+        }
+
+        .sector-item {
+            background: var(--bg-light);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border: 2px solid var(--border-color);
+        }
+
+        body.dark-mode .sector-item {
+            background: #1e293b;
+            border-color: #475569;
+        }
+
+        /* Profile Avatar Upload */
+        .profile-avatar-upload {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .profile-avatar-preview {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: var(--bg-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3em;
+            margin: 0 auto 15px;
+            border: 3px solid var(--primary-color);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .profile-avatar-preview:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        @media (max-width: 768px) {
+            .room-grid {
+                grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
+                gap: 8px;
+                padding: 15px;
+            }
+            
+            .burger-menu {
+                width: 300px;
+                left: -300px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Burger Menu Overlay -->
+    <div class="burger-overlay" id="burgerOverlay" onclick="closeBurgerMenu()"></div>
+
+    <!-- Burger Menu -->
+    <div class="burger-menu" id="burgerMenu">
+        <div class="burger-header">
+            <div class="burger-profile-pic" id="burgerProfilePic">👤</div>
+            <div class="burger-profile-name" id="burgerProfileName">Utilisateur</div>
+            <div class="burger-profile-role" id="burgerProfileRole">Infirmier(ère)</div>
+        </div>
+        
+        <div class="burger-menu-items">
+            <div class="burger-menu-section">MON COMPTE</div>
+            
+            <div class="burger-menu-item" onclick="openProfileSettings()">
+                <div class="burger-menu-item-icon">👤</div>
+                <div class="burger-menu-item-text">Mon profil</div>
+            </div>
+            
+            <div class="burger-menu-item" onclick="switchProfile()">
+                <div class="burger-menu-item-icon">🔄</div>
+                <div class="burger-menu-item-text">Changer de profil</div>
+            </div>
+            
+            <div class="burger-menu-section">ORGANISATION</div>
+            
+            <div class="burger-menu-item" onclick="openTemplates()">
+                <div class="burger-menu-item-icon">📋</div>
+                <div class="burger-menu-item-text">Mes templates</div>
+            </div>
+            
+            <div class="burger-menu-item" onclick="saveAsTemplate()">
+                <div class="burger-menu-item-icon">💾</div>
+                <div class="burger-menu-item-text">Sauvegarder comme template</div>
+            </div>
+            
+            <div class="burger-menu-section">PERSONNALISATION</div>
+            
+            <div class="burger-menu-item" onclick="openThemeCustomization()">
+                <div class="burger-menu-item-icon">🎨</div>
+                <div class="burger-menu-item-text">Thèmes et couleurs</div>
+            </div>
+            
+            <div class="burger-menu-item" onclick="toggleDarkMode()">
+                <div class="burger-menu-item-icon">🌙</div>
+                <div class="burger-menu-item-text">Mode sombre</div>
+            </div>
+            
+            <div class="burger-menu-section">PARAMÈTRES</div>
+            
+            <div class="burger-menu-item" onclick="openSettings()">
+                <div class="burger-menu-item-icon">⚙️</div>
+                <div class="burger-menu-item-text">Paramètres</div>
+            </div>
+            
+            <div class="burger-menu-item" onclick="openStats()">
+                <div class="burger-menu-item-icon">📊</div>
+                <div class="burger-menu-item-text">Statistiques</div>
+            </div>
+            
+            <div class="burger-menu-item" onclick="exportData()">
+                <div class="burger-menu-item-icon">📤</div>
+                <div class="burger-menu-item-text">Exporter mes données</div>
+            </div>
+            
+            <div class="burger-menu-section">À PROPOS</div>
+            
+            <div class="burger-menu-item" onclick="showAbout()">
+                <div class="burger-menu-item-icon">ℹ️</div>
+                <div class="burger-menu-item-text">À propos de PlanIDE</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container" id="mainApp" style="display: none;">
+        <div class="header">
+            <div class="burger-icon" onclick="openBurgerMenu()">☰</div>
+            <div class="settings-icon" onclick="openSettings()" title="Paramètres">⚙️</div>
+            <div class="header-content">
+                <img src="icon-192.png" alt="PlanIDE" class="header-logo">
+                <h1>PlanIDE</h1>
+            </div>
+            <p id="shiftInfo">Planification des Soins Infirmiers</p>
+            <div class="user-badge" id="headerUserBadge">👤 Utilisateur</div>
+            <div style="margin-top: 20px;">
+                <select id="sectorSelect" onchange="changeSector()"
+                    style="padding: 10px 20px; font-size: 1.1em; border-radius: 8px; border: 2px solid white; background: white; color: #0f766e; font-weight: 600; cursor: pointer;">
+                </select>
+            </div>
+        </div>
+
+        <div class="navigation">
+            <button class="nav-btn" onclick="previousRoom()">←</button>
+            <div class="room-display" id="roomDisplay">-</div>
+            <button class="nav-btn" onclick="nextRoom()">→</button>
+        </div>
+
+        <div class="room-grid" id="roomGrid"></div>
+
+        <div class="action-buttons">
+            <button class="btn btn-primary" onclick="openModal()">➕ Ajouter un soin</button>
+            <button class="btn btn-success" onclick="completeAllCares()">✓ Tout compléter</button>
+            <button class="btn btn-danger" onclick="deleteRoomCares()">🗑️ Supprimer chambre</button>
+            <button class="btn btn-warning" onclick="deleteAllCares()">⚠️ Tout supprimer</button>
+            <button class="btn btn-secondary" onclick="exportData()">💾 Sauvegarder</button>
+            <button class="btn btn-secondary" onclick="document.getElementById('importFile').click()">📂 Charger</button>
+            <input type="file" id="importFile" accept=".json" style="display: none;" onchange="importData(event)">
+        </div>
+
+        <div class="quick-actions">
+            <h3>⚡ Actions rapides</h3>
+            <div class="quick-actions-grid" id="quickActionsGrid">
+                <!-- Will be populated dynamically -->
+            </div>
+        </div>
+
+        <div class="content">
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-value" id="totalCares">0</div>
+                    <div class="stat-label">Soins totaux</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="completedCares">0</div>
+                    <div class="stat-label">Complétés</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="pendingCares">0</div>
+                    <div class="stat-label">En attente</div>
+                </div>
+            </div>
+
+            <div class="timeline" id="timeline"></div>
+        </div>
+
+        <div class="global-overview">
+            <h2>📊 Vue d'ensemble - Tous les soins</h2>
+            <div id="globalOverview"></div>
+        </div>
+    </div>
+
+    <!-- Modal: Création de profil -->
+    <div id="profileCreationModal" class="modal active">
+        <div class="modal-content">
+            <h2>👋 Bienvenue sur PlanIDE !</h2>
+            <div class="modal-body">
+                <p style="margin-bottom: 20px;">Créons votre profil pour personnaliser votre expérience.</p>
+                
+                <div class="profile-avatar-upload">
+                    <div class="profile-avatar-preview" id="profileAvatarPreview" onclick="chooseEmoji()">
+                        👤
+                    </div>
+                    <p style="font-size: 0.9em; color: #6c757d;">Cliquez pour choisir un emoji</p>
+                </div>
+                
+                <div class="form-group">
+                    <label>Votre nom / prénom</label>
+                    <input type="text" id="profileName" placeholder="Ex: Marie Dupont">
+                </div>
+                
+                <div class="form-group">
+                    <label>Votre fonction</label>
+                    <select id="profileRole">
+                        <option value="Infirmier(ère)">Infirmier(ère)</option>
+                        <option value="Infirmier(ère) DE">Infirmier(ère) DE</option>
+                        <option value="Aide-soignant(e)">Aide-soignant(e)</option>
+                        <option value="Infirmier(ère) de nuit">Infirmier(ère) de nuit</option>
+                        <option value="Infirmier(ère) coordinateur">Infirmier(ère) coordinateur</option>
+                        <option value="Autre">Autre</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Service habituel (optionnel)</label>
+                    <input type="text" id="profileService" placeholder="Ex: Médecine, Chirurgie...">
+                </div>
+            </div>
+            <div class="modal-buttons">
+                <button class="btn btn-primary" onclick="createProfile()">✅ Créer mon profil</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Configuration -->
+    <div id="configModal" class="modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <h2>⚙️ Configuration de PlanIDE</h2>
+            <div class="modal-body">
+                <div class="config-section">
+                    <h3>🕐 Horaires de service</h3>
+                    <div class="form-group">
+                        <label>Heure de début</label>
+                        <input type="time" id="configStartTime" value="08:00">
+                    </div>
+                    <div class="form-group">
+                        <label>Heure de fin</label>
+                        <input type="time" id="configEndTime" value="20:00">
+                    </div>
+                    <div class="form-group">
+                        <label>Intervalle entre les créneaux (heures)</label>
+                        <select id="configInterval">
+                            <option value="1">1 heure</option>
+                            <option value="2">2 heures</option>
+                            <option value="3">3 heures</option>
+                            <option value="4">4 heures</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="config-section">
+                    <h3>🏥 Secteurs / Services</h3>
+                    <div id="sectorsConfigList"></div>
+                    <button class="btn btn-primary" onclick="addSectorConfig()">➕ Ajouter un secteur</button>
+                </div>
+            </div>
+            <div class="modal-buttons">
+                <button class="btn btn-secondary" onclick="closeConfigModal()">Annuler</button>
+                <button class="btn btn-primary" onclick="saveConfiguration()">✅ Enregistrer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Theme Customization -->
+    <div id="themeModal" class="modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <h2>🎨 Thèmes et couleurs</h2>
+            <div class="modal-body">
+                <div class="config-section">
+                    <h3>Thèmes prédéfinis</h3>
+                    <div class="theme-grid" id="themeGrid"></div>
+                </div>
+                
+                <div class="config-section">
+                    <h3>Mode d'affichage</h3>
+                    <div style="display: flex; gap: 15px;">
+                        <button class="btn btn-secondary" onclick="setLightMode()">☀️ Mode clair</button>
+                        <button class="btn btn-secondary" onclick="setDarkMode()">🌙 Mode sombre</button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-buttons">
+                <button class="btn btn-secondary" onclick="closeThemeModal()">Fermer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Templates -->
+    <div id="templatesModal" class="modal">
+        <div class="modal-content" style="max-width: 900px;">
+            <h2>📋 Mes Templates</h2>
+            <div class="modal-body">
+                <div id="templatesGrid" class="template-grid"></div>
+                <div id="noTemplates" style="text-align: center; padding: 40px; color: #6c757d; display: none;">
+                    <p style="font-size: 1.2em; margin-bottom: 10px;">📋</p>
+                    <p>Aucun template sauvegardé</p>
+                    <p style="font-size: 0.9em; margin-top: 10px;">Créez votre premier template depuis le menu burger !</p>
+                </div>
+            </div>
+            <div class="modal-buttons">
+                <button class="btn btn-secondary" onclick="closeTemplatesModal()">Fermer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Save Template -->
+    <div id="saveTemplateModal" class="modal">
+        <div class="modal-content">
+            <h2>💾 Sauvegarder comme template</h2>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Nom du template</label>
+                    <input type="text" id="templateName" placeholder="Ex: Garde de nuit type, Mardi matin...">
+                </div>
+                
+                <div class="form-group">
+                    <label>Catégorie</label>
+                    <select id="templateCategory">
+                        <option value="personal">📁 Personnel</option>
+                        <option value="frequent">⭐ Fréquent</option>
+                        <option value="emergency">🚨 Urgence</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Description (optionnel)</label>
+                    <textarea id="templateDescription" placeholder="Notes sur ce template..." rows="3"></textarea>
+                </div>
+            </div>
+            <div class="modal-buttons">
+                <button class="btn btn-secondary" onclick="closeSaveTemplateModal()">Annuler</button>
+                <button class="btn btn-primary" onclick="confirmSaveTemplate()">💾 Sauvegarder</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Profile Settings -->
+    <div id="profileSettingsModal" class="modal">
+        <div class="modal-content">
+            <h2>👤 Mon profil</h2>
+            <div class="modal-body">
+                <div class="profile-avatar-upload">
+                    <div class="profile-avatar-preview" id="profileSettingsAvatarPreview" onclick="chooseEmojiSettings()">
+                        👤
+                    </div>
+                    <p style="font-size: 0.9em; color: #6c757d;">Cliquez pour changer</p>
+                </div>
+                
+                <div class="form-group">
+                    <label>Nom / Prénom</label>
+                    <input type="text" id="profileSettingsName">
+                </div>
+                
+                <div class="form-group">
+                    <label>Fonction</label>
+                    <select id="profileSettingsRole">
+                        <option value="Infirmier(ère)">Infirmier(ère)</option>
+                        <option value="Infirmier(ère) DE">Infirmier(ère) DE</option>
+                        <option value="Aide-soignant(e)">Aide-soignant(e)</option>
+                        <option value="Infirmier(ère) de nuit">Infirmier(ère) de nuit</option>
+                        <option value="Infirmier(ère) coordinateur">Infirmier(ère) coordinateur</option>
+                        <option value="Autre">Autre</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Service habituel</label>
+                    <input type="text" id="profileSettingsService">
+                </div>
+                
+                <div class="config-section">
+                    <h3>⚡ Actions rapides personnalisées</h3>
+                    <p style="font-size: 0.9em; color: #6c757d; margin-bottom: 15px;">
+                        Personnalisez les soins qui apparaissent dans vos actions rapides
+                    </p>
+                    <div id="customQuickActionsConfig"></div>
+                </div>
+            </div>
+            <div class="modal-buttons">
+                <button class="btn btn-secondary" onclick="closeProfileSettings()">Annuler</button>
+                <button class="btn btn-primary" onclick="saveProfileSettings()">💾 Enregistrer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Statistics -->
+    <div id="statsModal" class="modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <h2>📊 Statistiques</h2>
+            <div class="modal-body">
+                <div class="config-section">
+                    <h3>📈 Aujourd'hui</h3>
+                    <div class="stats" id="todayStats"></div>
+                </div>
+                
+                <div class="config-section">
+                    <h3>📅 Cette semaine</h3>
+                    <div id="weekStats"></div>
+                </div>
+                
+                <div class="config-section">
+                    <h3>🏆 Records personnels</h3>
+                    <div id="personalRecords"></div>
+                </div>
+            </div>
+            <div class="modal-buttons">
+                <button class="btn btn-secondary" onclick="closeStatsModal()">Fermer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: About -->
+    <div id="aboutModal" class="modal">
+        <div class="modal-content">
+            <h2>ℹ️ À propos de PlanIDE</h2>
+            <div class="modal-body">
+                <div style="text-align: center; margin-bottom: 30px;">
+                    <img src="icon-192.png" alt="PlanIDE" style="width: 100px; height: 100px; border-radius: 50%; border: 3px solid var(--primary-color);">
+                    <h3 style="margin-top: 15px;">PlanIDE v3.0</h3>
+                    <p style="color: #6c757d;">Application de planification des soins</p>
+                </div>
+                
+                <div class="config-section">
+                    <h3>✨ Fonctionnalités</h3>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="padding: 8px 0;">✅ Gestion multi-profils</li>
+                        <li style="padding: 8px 0;">✅ Templates réutilisables</li>
+                        <li style="padding: 8px 0;">✅ Personnalisation des thèmes</li>
+                        <li style="padding: 8px 0;">✅ Mode hors ligne</li>
+                        <li style="padding: 8px 0;">✅ Export/Import de données</li>
+                        <li style="padding: 8px 0;">✅ Statistiques personnelles</li>
+                    </ul>
+                </div>
+                
+                <div class="config-section">
+                    <h3>💡 Conseils d'utilisation</h3>
+                    <p style="line-height: 1.6;">
+                        • Créez des templates pour vos gardes récurrentes<br>
+                        • Personnalisez vos actions rapides selon vos besoins<br>
+                        • Exportez régulièrement vos données par sécurité<br>
+                        • Utilisez le mode sombre pour économiser la batterie
+                    </p>
+                </div>
+                
+                <div style="text-align: center; margin-top: 20px; padding-top: 20px; border-top: 2px solid #e9ecef;">
+                    <p style="font-size: 0.9em; color: #6c757d;">
+                        Fait avec ❤️ pour les soignants<br>
+                        © 2025 PlanIDE
+                    </p>
+                </div>
+            </div>
+            <div class="modal-buttons">
+                <button class="btn btn-secondary" onclick="closeAboutModal()">Fermer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Emoji Picker -->
+    <div id="emojiPickerModal" class="modal">
+        <div class="modal-content">
+            <h2>Choisir un emoji</h2>
+            <div class="modal-body">
+                <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; font-size: 2em;">
+                    <div class="emoji-option" onclick="selectEmoji('👤')">👤</div>
+                    <div class="emoji-option" onclick="selectEmoji('👨‍⚕️')">👨‍⚕️</div>
+                    <div class="emoji-option" onclick="selectEmoji('👩‍⚕️')">👩‍⚕️</div>
+                    <div class="emoji-option" onclick="selectEmoji('😊')">😊</div>
+                    <div class="emoji-option" onclick="selectEmoji('😎')">😎</div>
+                    <div class="emoji-option" onclick="selectEmoji('🌟')">🌟</div>
+                    <div class="emoji-option" onclick="selectEmoji('💪')">💪</div>
+                    <div class="emoji-option" onclick="selectEmoji('🔥')">🔥</div>
+                    <div class="emoji-option" onclick="selectEmoji('⚡')">⚡</div>
+                    <div class="emoji-option" onclick="selectEmoji('🎯')">🎯</div>
+                    <div class="emoji-option" onclick="selectEmoji('🌈')">🌈</div>
+                    <div class="emoji-option" onclick="selectEmoji('🦋')">🦋</div>
+                </div>
+            </div>
+            <div class="modal-buttons">
+                <button class="btn btn-secondary" onclick="closeEmojiPicker()">Annuler</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals pour soins (identiques à avant) -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <h2>Ajouter un soin</h2>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Heure</label>
+                    <select id="careTime"></select>
+                </div>
+
+                <div class="form-group">
+                    <label style="display: flex; align-items: center; gap: 10px;">
+                        <input type="checkbox" id="modalMultiRoomCheckbox" onchange="toggleModalMultiRoom()"
+                            style="width: auto; cursor: pointer;">
+                        <span>Sélectionner plusieurs chambres</span>
+                    </label>
+                </div>
+
+                <div class="form-group" id="modalSingleRoomGroup">
+                    <label>Chambre</label>
+                    <input type="text" id="careRoom" readonly style="background: #f8f9fa;">
+                </div>
+
+                <div class="form-group" id="modalMultiRoomGroup" style="display: none;">
+                    <label>Chambres</label>
+                    <button class="select-all-btn" onclick="selectAllRooms()">✓ Tout sélectionner</button>
+                    <div class="multi-room-grid" id="modalMultiRoomGrid"></div>
+                </div>
+
+                <div class="form-group">
+                    <label>Description du soin</label>
+                    <textarea id="careDescription"
+                        placeholder="Ex: Prise de constantes, médication, toilette, surveillance..."></textarea>
+                </div>
+            </div>
+            <div class="modal-buttons">
+                <button class="btn btn-secondary" onclick="closeModal()">Annuler</button>
+                <button class="btn btn-primary" onclick="addCare()">Ajouter</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="quickModal" class="modal">
+        <div class="modal-content">
+            <h2 id="quickModalTitle">Ajouter un soin rapide</h2>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Heure</label>
+                    <select id="quickCareTime"></select>
+                </div>
+
+                <div class="form-group">
+                    <label style="display: flex; align-items: center; gap: 10px;">
+                        <input type="checkbox" id="multiRoomCheckbox" onchange="toggleMultiRoom()"
+                            style="width: auto; cursor: pointer;">
+                        <span>Sélectionner plusieurs chambres</span>
+                    </label>
+                </div>
+
+                <div class="form-group" id="singleRoomGroup">
+                    <label>Chambre</label>
+                    <input type="text" id="quickCareRoom" readonly style="background: #f8f9fa;">
+                </div>
+
+                <div class="form-group" id="multiRoomGroup" style="display: none;">
+                    <label>Chambres</label>
+                    <button class="select-all-btn" onclick="selectAllRoomsQuick()">✓ Tout sélectionner</button>
+                    <div class="multi-room-grid" id="multiRoomGrid"></div>
+                </div>
+
+                <div class="form-group">
+                    <label>Soin</label>
+                    <input type="text" id="quickCareDescription" readonly
+                        style="background: #f8f9fa; font-weight: 600; font-size: 1.1em;">
+                </div>
+            </div>
+            <div class="modal-buttons">
+                <button class="btn btn-secondary" onclick="closeQuickModal()">Annuler</button>
+                <button class="btn btn-primary" onclick="addQuickCare()">Ajouter</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tesseract.js pour OCR -->
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
+    
+    <!-- Traductions -->
+    <script src="translations.js"></script>
+    
+    <!-- App principale -->
+    <script src="app.js"></script>
+    
+    <!-- Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('service-worker.js')
+                    .then(reg => console.log('✅ Service Worker enregistré'))
+                    .catch(err => console.log('❌ Erreur Service Worker:', err));
+            });
+        }
+    </script>
+
+    <style>
+        .emoji-option {
+            padding: 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            background: var(--bg-light);
+        }
+
+        .emoji-option:hover {
+            background: var(--primary-color);
+            transform: scale(1.2);
+        }
+    </style>
+</body>
+</html>
