@@ -20,7 +20,59 @@ let currentTheme = 'ocean';
 let isDarkMode = false;
 let prescriptions = [];
 let currentPrescriptionImage = null;
-let roomNotes = {};
+let roomNotes = {};// ===== BASES DE DONNÉES MÉDICAMENTS =====
+const atbDatabase = {
+    'Amoxicilline': ['500mg', '1g'],
+    'Augmentin': ['500mg/125mg', '1g/125mg', '2g/125mg'],
+    'Ceftriaxone (Rocéphine)': ['1g', '2g'],
+    'Ciprofloxacine': ['200mg', '400mg', '500mg', '750mg'],
+    'Metronidazole (Flagyl)': ['500mg', '1.5g'],
+    'Vancomycine': ['500mg', '1g'],
+    'Gentamicine': ['80mg', '160mg', '240mg'],
+    'Azithromycine (Zithromax)': ['250mg', '500mg'],
+    'Clarithromycine': ['250mg', '500mg']
+};
+
+const perfusionDatabase = {
+    'NaCl 0.9%': ['250ml', '500ml', '1000ml'],
+    'Glucose 5%': ['250ml', '500ml', '1000ml'],
+    'Glucose 10%': ['250ml', '500ml'],
+    'Ringer Lactate': ['500ml', '1000ml'],
+    'Glucosé 30%': ['10ml', '20ml'],
+    'Mannitol 20%': ['250ml', '500ml']
+};
+
+const medicationCategories = {
+    'Antalgiques': {
+        'Paracétamol': ['500mg', '1g'],
+        'Tramadol': ['50mg', '100mg'],
+        'Morphine': ['10mg', '20mg', '30mg'],
+        'Codéine': ['30mg', '60mg'],
+        'Nefopam (Acupan)': ['20mg']
+    },
+    'Somnifères': {
+        'Zolpidem (Stilnox)': ['5mg', '10mg'],
+        'Zopiclone (Imovane)': ['3.75mg', '7.5mg'],
+        'Hydroxyzine (Atarax)': ['25mg', '100mg']
+    },
+    'Anxiolytiques': {
+        'Alprazolam (Xanax)': ['0.25mg', '0.5mg'],
+        'Lorazepam (Temesta)': ['1mg', '2.5mg'],
+        'Diazepam (Valium)': ['2mg', '5mg', '10mg'],
+        'Oxazepam (Seresta)': ['10mg', '50mg']
+    },
+    'Anti-émétiques': {
+        'Metoclopramide (Primpéran)': ['10mg'],
+        'Ondansetron (Zofran)': ['4mg', '8mg'],
+        'Dompéridone (Motilium)': ['10mg']
+    },
+    'Laxatifs': {
+        'Macrogol (Forlax)': ['10g', '20g'],
+        'Lactulose (Duphalac)': ['10g', '20g'],
+        'Docusate': ['100mg']
+    }
+};
+
 
 // ===== THÈMES =====
 const themes = {
@@ -33,13 +85,14 @@ const themes = {
 };
 
 const defaultQuickActions = [
-    { name: 'Prise de constantes', emoji: '🩺' },
-    { name: 'Changement protection', emoji: '🛏️' },
-    { name: 'ATB', emoji: '💊' },
-    { name: 'Prise de sang', emoji: '🩸' },
-    { name: 'Perfusion', emoji: '💉' },
-    { name: 'Surveillance température', emoji: '🌡️' }
+    { name: 'Prise de constantes', emoji: '🩺', type: 'simple' },
+    { name: 'Changement protection', emoji: '🛏️', type: 'simple' },
+    { name: 'ATB', emoji: '💊', type: 'atb' },
+    { name: 'Perfusion', emoji: '💉', type: 'perfusion' },
+    { name: 'Prise de sang', emoji: '🩸', type: 'simple' },
+    { name: 'Autre médicament', emoji: '💊', type: 'medication' }
 ];
+
 
 // ===== INITIALISATION =====
 function init() {
@@ -685,7 +738,7 @@ function renderQuickActions() {
     actions.forEach(action => {
         const btn = document.createElement('button');
         btn.className = 'quick-btn';
-        btn.onclick = () => quickAddCare(action.name, action.emoji);
+        btn.onclick = () => quickAddCare(action.name, action.emoji, action.type);
         btn.innerHTML = `
             <span class="quick-btn-emoji">${action.emoji}</span>
             <span class="quick-btn-label">${action.name}</span>
@@ -694,15 +747,220 @@ function renderQuickActions() {
     });
 }
 
-function quickAddCare(careName, emoji) {
+
+function quickAddCare(careName, emoji, type) {
     document.getElementById('quickCareRoom').value = rooms[currentRoomIndex];
-    document.getElementById('quickCareDescription').value = emoji + ' ' + careName;
     document.getElementById('quickModalTitle').textContent = emoji + ' ' + careName;
     document.getElementById('multiRoomCheckbox').checked = false;
     document.getElementById('singleRoomGroup').style.display = 'block';
     document.getElementById('multiRoomGroup').style.display = 'none';
+    
+    // Gérer les différents types
+    const atbGroup = document.getElementById('atbSelectionGroup');
+    const perfusionGroup = document.getElementById('perfusionSelectionGroup');
+    const medicationGroup = document.getElementById('medicationSelectionGroup');
+    
+    // Cacher tous les groupes par défaut
+    if (atbGroup) atbGroup.style.display = 'none';
+    if (perfusionGroup) perfusionGroup.style.display = 'none';
+    if (medicationGroup) medicationGroup.style.display = 'none';
+    
+    if (type === 'atb') {
+        // Afficher sélection ATB
+        if (atbGroup) {
+            atbGroup.style.display = 'block';
+            const atbSelect = document.getElementById('atbSelect');
+            atbSelect.innerHTML = '<option value="">-- Choisir un antibiotique --</option>';
+            Object.keys(atbDatabase).forEach(atb => {
+                const option = document.createElement('option');
+                option.value = atb;
+                option.textContent = atb;
+                atbSelect.appendChild(option);
+            });
+        }
+        document.getElementById('quickCareDescription').value = '💊 ATB';
+    } else if (type === 'perfusion') {
+        // Afficher sélection perfusion
+        if (perfusionGroup) {
+            perfusionGroup.style.display = 'block';
+            const perfusionSelect = document.getElementById('perfusionSelect');
+            perfusionSelect.innerHTML = '<option value="">-- Choisir une perfusion --</option>';
+            Object.keys(perfusionDatabase).forEach(perf => {
+                const option = document.createElement('option');
+                option.value = perf;
+                option.textContent = perf;
+                perfusionSelect.appendChild(option);
+            });
+        }
+        document.getElementById('quickCareDescription').value = '💉 Perfusion';
+    } else if (type === 'medication') {
+        // Afficher sélection médicament
+        if (medicationGroup) {
+            medicationGroup.style.display = 'block';
+            const categorySelect = document.getElementById('medicationCategory');
+            categorySelect.innerHTML = '<option value="">-- Choisir une catégorie --</option>';
+            Object.keys(medicationCategories).forEach(category => {
+                const option = document.createElement('option');
+                option.value = category;
+                option.textContent = category;
+                categorySelect.appendChild(option);
+            });
+        }
+        document.getElementById('quickCareDescription').value = '💊 Médicament';
+    } else {
+        document.getElementById('quickCareDescription').value = emoji + ' ' + careName;
+    }
+    
     initMultiRoomGrid();
     document.getElementById('quickModal').classList.add('active');
+}
+function updateATBSelection() {
+    const atbSelect = document.getElementById('atbSelect');
+    const selectedATB = atbSelect.value;
+    const dosageGroup = document.getElementById('atbDosageGroup');
+    const dosageSelect = document.getElementById('atbDosage');
+    
+    if (selectedATB && atbDatabase[selectedATB]) {
+        dosageGroup.style.display = 'block';
+        dosageSelect.innerHTML = '<option value="">-- Choisir un dosage --</option>';
+        atbDatabase[selectedATB].forEach(dose => {
+            const option = document.createElement('option');
+            option.value = dose;
+            option.textContent = dose;
+            dosageSelect.appendChild(option);
+        });
+        
+        const selectedDosage = dosageSelect.value;
+        if (selectedDosage) {
+            document.getElementById('quickCareDescription').value = `💊 ATB - ${selectedATB} (${selectedDosage})`;
+        } else {
+            document.getElementById('quickCareDescription').value = `💊 ATB - ${selectedATB}`;
+        }
+    } else {
+        dosageGroup.style.display = 'none';
+        document.getElementById('quickCareDescription').value = '💊 ATB';
+    }
+}
+
+function updateATBDosage() {
+    const atbSelect = document.getElementById('atbSelect');
+    const dosageSelect = document.getElementById('atbDosage');
+    const selectedATB = atbSelect.value;
+    const selectedDosage = dosageSelect.value;
+    
+    if (selectedATB && selectedDosage) {
+        document.getElementById('quickCareDescription').value = `💊 ATB - ${selectedATB} (${selectedDosage})`;
+    } else if (selectedATB) {
+        document.getElementById('quickCareDescription').value = `💊 ATB - ${selectedATB}`;
+    }
+}
+
+function updatePerfusionSelection() {
+    const perfusionSelect = document.getElementById('perfusionSelect');
+    const selectedPerfusion = perfusionSelect.value;
+    const volumeGroup = document.getElementById('perfusionVolumeGroup');
+    const volumeSelect = document.getElementById('perfusionVolume');
+    
+    if (selectedPerfusion && perfusionDatabase[selectedPerfusion]) {
+        volumeGroup.style.display = 'block';
+        volumeSelect.innerHTML = '<option value="">-- Choisir un volume --</option>';
+        perfusionDatabase[selectedPerfusion].forEach(vol => {
+            const option = document.createElement('option');
+            option.value = vol;
+            option.textContent = vol;
+            volumeSelect.appendChild(option);
+        });
+        
+        const selectedVolume = volumeSelect.value;
+        if (selectedVolume) {
+            document.getElementById('quickCareDescription').value = `💉 Perfusion - ${selectedPerfusion} (${selectedVolume})`;
+        } else {
+            document.getElementById('quickCareDescription').value = `💉 Perfusion - ${selectedPerfusion}`;
+        }
+    } else {
+        volumeGroup.style.display = 'none';
+        document.getElementById('quickCareDescription').value = '💉 Perfusion';
+    }
+}
+
+function updatePerfusionVolume() {
+    const perfusionSelect = document.getElementById('perfusionSelect');
+    const volumeSelect = document.getElementById('perfusionVolume');
+    const selectedPerfusion = perfusionSelect.value;
+    const selectedVolume = volumeSelect.value;
+    
+    if (selectedPerfusion && selectedVolume) {
+        document.getElementById('quickCareDescription').value = `💉 Perfusion - ${selectedPerfusion} (${selectedVolume})`;
+    } else if (selectedPerfusion) {
+        document.getElementById('quickCareDescription').value = `💉 Perfusion - ${selectedPerfusion}`;
+    }
+}
+
+function updateMedicationCategory() {
+    const categorySelect = document.getElementById('medicationCategory');
+    const selectedCategory = categorySelect.value;
+    const medicationGroup = document.getElementById('medicationSelectGroup');
+    const medicationSelect = document.getElementById('medicationSelect');
+    
+    if (selectedCategory && medicationCategories[selectedCategory]) {
+        medicationGroup.style.display = 'block';
+        medicationSelect.innerHTML = '<option value="">-- Choisir un médicament --</option>';
+        Object.keys(medicationCategories[selectedCategory]).forEach(med => {
+            const option = document.createElement('option');
+            option.value = med;
+            option.textContent = med;
+            medicationSelect.appendChild(option);
+        });
+        document.getElementById('quickCareDescription').value = `💊 ${selectedCategory}`;
+    } else {
+        medicationGroup.style.display = 'none';
+        document.getElementById('quickCareDescription').value = '💊 Médicament';
+    }
+}
+
+function updateMedicationSelection() {
+    const categorySelect = document.getElementById('medicationCategory');
+    const medicationSelect = document.getElementById('medicationSelect');
+    const selectedCategory = categorySelect.value;
+    const selectedMedication = medicationSelect.value;
+    const dosageGroup = document.getElementById('medicationDosageGroup');
+    const dosageSelect = document.getElementById('medicationDosage');
+    
+    if (selectedMedication && medicationCategories[selectedCategory][selectedMedication]) {
+        dosageGroup.style.display = 'block';
+        dosageSelect.innerHTML = '<option value="">-- Choisir un dosage --</option>';
+        medicationCategories[selectedCategory][selectedMedication].forEach(dose => {
+            const option = document.createElement('option');
+            option.value = dose;
+            option.textContent = dose;
+            dosageSelect.appendChild(option);
+        });
+        
+        const selectedDosage = dosageSelect.value;
+        if (selectedDosage) {
+            document.getElementById('quickCareDescription').value = `💊 ${selectedMedication} (${selectedDosage})`;
+        } else {
+            document.getElementById('quickCareDescription').value = `💊 ${selectedMedication}`;
+        }
+    } else {
+        dosageGroup.style.display = 'none';
+        if (selectedCategory) {
+            document.getElementById('quickCareDescription').value = `💊 ${selectedCategory}`;
+        }
+    }
+}
+
+function updateMedicationDosage() {
+    const medicationSelect = document.getElementById('medicationSelect');
+    const dosageSelect = document.getElementById('medicationDosage');
+    const selectedMedication = medicationSelect.value;
+    const selectedDosage = dosageSelect.value;
+    
+    if (selectedMedication && selectedDosage) {
+        document.getElementById('quickCareDescription').value = `💊 ${selectedMedication} (${selectedDosage})`;
+    } else if (selectedMedication) {
+        document.getElementById('quickCareDescription').value = `💊 ${selectedMedication}`;
+    }
 }
 
 function closeQuickModal() {
