@@ -1329,7 +1329,22 @@ max-width: 250px;
         </div>
 
         <div class="global-overview">
-            <h2>📊 Vue d'ensemble - Tous les soins</h2>
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+    <h2 style="margin: 0;">📊 Vue d'ensemble - Tous les soins</h2>
+    <button class="btn btn-primary" id="multiValidateBtn" onclick="toggleMultiValidateMode​​​​​​​​​​​​​​​​
+<div id="multiValidatePanel" style="display: none; background: #e7f5ff; border: 2px solid var(--primary-color); border-radius: 10px; padding: 15px; margin-bottom: 20px;">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <strong style="color: var(--primary-color);">Mode sélection activé</strong>
+            <span id="selectedCount" style="margin-left: 15px; color: #6c757d;">0 soin(s) sélectionné(s)</span>
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <button class="btn btn-success" onclick="validateSelectedCares()">✓ Valider la sélection</button>
+            <button class="btn btn-secondary" onclick="cancelMultiValidateMode()">Annuler</button>
+        </div>
+    </div>
+</div>
+
             <div id="globalOverview"></div>
         </div>
     </div>
@@ -1804,6 +1819,43 @@ max-width: 250px;
             background: var(--primary-color);
             transform: scale(1.2);
         }
+        .overview-care-card.selectable {
+    cursor: pointer;
+    position: relative;
+}
+
+.overview-care-card.selectable:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
+}
+
+.overview-care-card.selected {
+    border: 3px solid var(--success-color) !important;
+    background: #d1fae5 !important;
+}
+
+.care-checkbox {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    width: 24px;
+    height: 24px;
+    background: white;
+    border: 2px solid var(--border-color);
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2em;
+    color: var(--success-color);
+}
+
+.overview-care-card.selected .care-checkbox {
+    background: var(--success-color);
+    border-color: var(--success-color);
+    color: white;
+}
+
     </style>
     <!-- Modal Manuel de Prélèvements -->
 <div class="modal" id="prelevementsModal">
