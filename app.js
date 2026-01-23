@@ -1933,7 +1933,3 @@ function validateSelectedCares() {
 
 // ===== LANCEMENT =====
 init();
-
-
-// ===== LANCEMENT =====
-init();
