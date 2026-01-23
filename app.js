@@ -1851,6 +1851,68 @@ function filterPrelevements() {
     const searchText = document.getElementById('prelevementSearch').value;
     renderPrelevementsTable(searchText);
 }
+function toggleMultiValidateMode() {
+    multiValidateMode = !multiValidateMode;
+    selectedCares.clear();
+    
+    const btn = document.getElementById('multiValidateBtn');
+    const panel = document.getElementById('multiValidatePanel');
+    
+    if (multiValidateMode) {
+        btn.textContent = '✕ Annuler';
+        btn.classList.remove('btn-primary');
+        btn.classList.add('btn-secondary');
+        panel.style.display = 'block';
+    } else {
+        btn.textContent = '✓ Valider plusieurs';
+        btn.classList.remove('btn-secondary');
+        btn.classList.add('btn-primary');
+        panel.style.display = 'none';
+    }
+    
+    renderGlobalOverview();
+    updateSelectedCount();
+}
+
+function cancelMultiValidateMode() {
+    multiValidateMode = false;
+    selectedCares.clear();
+    
+    const btn = document.getElementById('multiValidateBtn');
+    const panel = document.getElementById('multiValidatePanel');
+    
+    btn.textContent = '✓ Valider plusieurs';
+    btn.classList.remove('btn-secondary');
+    btn.classList.add('btn-primary');
+    panel.style.display = 'none';
+    
+    renderGlobalOverview();
+}
+
+function toggleCareSelection(careId) {
+    if (selectedCares.has(careId)) {
+        selectedCares.delete(careId);
+    } else {
+        selectedCares.add(careId);
+    }
+    renderGlobalOverview();
+    updateSelectedCount();
+}
+
+function updateSelectedCount() {
+    const countEl = document.getElementById('selectedCount');
+    if (countEl) {
+        countEl.textContent = `${selectedCares.size} soin(s) sélectionné(s)`;
+    }
+}
+
+function validateSelectedCares() {
+    if (selectedCares.size === 0) {
+        alert('⚠️ Aucun soin sélectionné');
+        return;
+    }
+    
+    const​​​​​​​​​​​​​​​​
 
 // ===== LANCEMENT =====
 init();
