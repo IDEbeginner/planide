@@ -1912,7 +1912,28 @@ function validateSelectedCares() {
         return;
     }
     
-    const​​​​​​​​​​​​​​​​
+        const count = selectedCares.size;
+    
+    if (confirm(`Valider ${count} soin(s) ?`)) {
+        selectedCares.forEach(careId => {
+            const care = careData.find(c => c.id === careId);
+            if (care) care.completed = true;
+        });
+        
+        saveCareData();
+        selectedCares.clear();
+        cancelMultiValidateMode();
+        renderTimeline();
+        updateStats();
+        renderGlobalOverview();
+        
+        alert(`✅ ${count} soin(s) validé(s) !`);
+    }
+}
+
+// ===== LANCEMENT =====
+init();
+
 
 // ===== LANCEMENT =====
 init();
