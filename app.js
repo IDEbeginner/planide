@@ -694,6 +694,9 @@ function addCare() {
     closeModal();
 }
 
+let multiValidateMode = false;
+let selectedCares = new Set();
+
 function renderGlobalOverview() {
     const overview = document.getElementById('globalOverview');
     overview.innerHTML = '';
@@ -716,19 +719,29 @@ function renderGlobalOverview() {
             
             timeCares.forEach(care => {
                 const card = document.createElement('div');
-                card.className = 'overview-care-card' + (care.completed ? ' completed' : '');
+                card.className = 'overview-care-card' + 
+                    (care.completed ? ' completed' : '') +
+                    (multiValidateMode ? ' selectable' : '') +
+                    (selectedCares.has(care.id) ? ' selected' : '');
+                card.dataset.careId = care.id;
                 
                 // Extraire l'emoji de la description
                 const emojiMatch = care.description.match(/[\p{Emoji}\u{1F300}-\u{1F9FF}]/u);
                 const emoji = emojiMatch ? emojiMatch[0] : '📋';
                 
                 card.innerHTML = `
+                    ${multiValidateMode && !care.completed ? '<div class="care-checkbox">' + (selectedCares.has(care.id) ? '✓' : '') + '</div>' : ''}
                     <div class="overview-care-emoji">${emoji}</div>
                     <div class="overview-room-number">${care.room}</div>
                 `;
+                
                 card.onclick = () => {
-                    goToRoom(rooms.indexOf(care.room));
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                    if (multiValidateMode && !care.completed) {
+                        toggleCareSelection(care.id);
+                    } else if (!multiValidateMode) {
+                        goToRoom(rooms.indexOf(care.room));
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }
                 };
                 grid.appendChild(card);
             });
@@ -737,6 +750,91 @@ function renderGlobalOverview() {
             section.appendChild(grid);
             overview.appendChild(section);
         }
+    });
+    
+    if (overview.innerHTML === '') {
+        overview.innerHTML = '<div style="text-align: center; color: #6c757d; padding: 40px;">Aucun soin programmé</div>';
+    }
+}
+
+function toggleMultiValidateMode() {
+    multiValidateMode = !multiValidateMode;
+    selectedCares.clear();
+    
+    const btn = document.getElementById('multiValidateBtn');
+    const panel = document.getElementById('multiValidatePanel');
+    
+    if (multiValidateMode) {
+        btn.textContent = '✕ Annuler';
+        btn.classList.remove('btn-primary');
+        btn.classList.add('btn-secondary');
+        panel.style.display = 'block';
+    } else {
+        btn.textContent = '✓ Valider plusieurs';
+        btn.classList.remove('btn-secondary');
+        btn.classList.add('btn-primary');
+        panel.style.display = 'none';
+    }
+    
+    renderGlobalOverview();
+    updateSelectedCount();
+}
+
+function cancelMultiValidateMode() {
+    multiValidateMode = false;
+    selectedCares.clear();
+    
+    const btn = document.getElementById('multiValidateBtn');
+    const panel = document.getElementById('multiValidatePanel');
+    
+    btn.textContent = '✓ Valider plusieurs';
+    btn.classList.remove('btn-secondary');
+    btn.classList.add('btn-primary');
+    panel.style.display = 'none';
+    
+    renderGlobalOverview();
+}
+
+function toggleCareSelection(careId) {
+    if (selectedCares.has(careId)) {
+        selectedCares.delete(careId);
+    } else {
+        selectedCares.add(careId);
+    }
+    renderGlobalOverview();
+    updateSelectedCount();
+}
+
+function updateSelectedCount() {
+    const countEl = document.getElementById('selectedCount');
+    if (countEl) {
+        countEl.textContent = `${selectedCares.size} soin(s) sélectionné(s)`;
+    }
+}
+
+function validateSelectedCares() {
+    if (selectedCares.size === 0) {
+        alert('⚠️ Aucun soin sélectionné');
+        return;
+    }
+    
+    if (confirm(`Valider ${selectedCares.size} soin(s) ?`)) {
+        selectedCares.forEach(careId => {
+            const care = careData.find(c => c.id === careId);
+            if (care) care.completed = true;
+        });
+        
+        saveCareData();
+        selectedCares.clear();
+        cancelMultiValidateMode();
+        renderTimeline();
+        updateStats();
+        renderGlobalOverview();
+        
+        alert(`✅ ${selectedCares.size} soin(s) validé(s) !`);
+    }
+}
+
     });
     
     if (overview.innerHTML === '') {
